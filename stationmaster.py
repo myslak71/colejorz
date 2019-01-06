@@ -1,3 +1,4 @@
+import sys
 from time import sleep
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from RPi import GPIO
@@ -8,6 +9,7 @@ PWM = 27
 
 
 MIN_SPEED = 50
+MAX_SPEED = 100
 SPEED_STEP = 10
 
 class Pilothouse:
@@ -20,6 +22,7 @@ class Pilothouse:
         self.state = self.STOP
         self.pwm_value = 0
         self._init_gpio()
+        self.report_status()
 
     def _init_gpio(self):
         GPIO.setmode(GPIO.BCM)
@@ -32,18 +35,31 @@ class Pilothouse:
         self.pwm_value = 0
 
     def speed_up(self):
-        if self.pwm_value < 100:
+        if self.pwm_value < MAX_SPEED:
             if self.pwm_value == 0:
-                self.pwm_value = MIN_SPEED
+                self.adjust_speed(MIN_SPEED)
             else:
-                self.pwm_value += SPEED_STEP
-            self.pwm_value = min(self.pwm_value, 100)
-            self.pwm.ChangeDutyCycle(self.pwm_value)
+                self.adjust_speed(self.pwm_value + SPEED_STEP)
 
     def slow_down(self):
         if self.pwm_value > MIN_SPEED:
-            self.pwm_value -= SPEED_STEP
+            self.adjust_speed(self.pwm_value - SPEED_STEP)
+
+    def adjust_speed(self, level):
+        incr = 1
+        if level == self.pwm_value:
+            return
+        if level < self.pwm_value:
+            incr = -1
+        elif level > self.pwm_value:
+            incr = 1
+        while level != self.pwm_value:
+            self.pwm_value += incr
+            # never go faster than 100%
+            self.pwm_value = min(self.pwm_value, MAX_SPEED)
             self.pwm.ChangeDutyCycle(self.pwm_value)
+            self.report_status()
+            sleep(0.2)
 
     def forward(self):
         if self.state == self.FORWARD:
@@ -51,8 +67,8 @@ class Pilothouse:
         self.stop()
         sleep(1)
         GPIO.output(FWD_PIN, GPIO.HIGH)
-        self.speed_up()
         self.state = self.FORWARD
+        self.speed_up()
 
     def backward(self):
         if self.state == self.BACKWARD:
@@ -60,15 +76,26 @@ class Pilothouse:
         self.stop()
         sleep(1)
         GPIO.output(BCK_PIN, GPIO.HIGH)
-        self.speed_up()
         self.state = self.BACKWARD
+        self.speed_up()
+
+    def report_status(self):
+        if self.state == self.STOP:
+            msg = 'Waiting at station!'
+        else:
+            msg = 'Going {direction} at {speed:2d}'.format(
+                direction=self.state,
+                speed=self.pwm_value,
+            )
+        print(msg, end="\r")
+        sys.stdout.flush()
 
     def stop(self):
+        self.adjust_speed(0)
         GPIO.output(BCK_PIN, GPIO.LOW)
         GPIO.output(FWD_PIN, GPIO.LOW)
-        self.pwm_value = 0
-        self.pwm.ChangeDutyCycle(self.pwm_value)
         self.state = self.STOP
+        self.report_status()
 
     def exit(self):
         self.stop()
