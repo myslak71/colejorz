@@ -1,4 +1,5 @@
 import sys
+from json import dumps
 from time import sleep
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from RPi import GPIO
@@ -83,9 +84,8 @@ class Pilothouse:
         if self.state == self.STOP:
             msg = 'Waiting at station!'
         else:
-            msg = 'Going {direction} at {speed:2d}'.format(
-                direction=self.state,
-                speed=self.pwm_value,
+            msg = 'Going {direction} at {speed:02d}'.format(
+                **self.state
             )
         print(msg, end="\r")
         sys.stdout.flush()
@@ -101,6 +101,13 @@ class Pilothouse:
         self.stop()
         self.pwm.stop()
         GPIO.cleanup()
+
+    @property
+    def state(self):
+        return {
+            'direction': self.state,
+            'speed': self.pwm_value
+        }
 
 
 class StationDutyOffice(HTTPServer):
@@ -146,6 +153,10 @@ class StationDutyRadio(BaseHTTPRequestHandler):
         "I said STOP!"
         self.server.pilothouse.stop()
         self.wfile.write('This is a trainwreck! Let\'s revert!\n'.encode('utf-8'))
+
+    def do_STATUS(self):
+        "Provide current status"
+        self.wfile.write((dumps(self.server.pilothouse.state)+'\n').encode('utf-8'))
 
 
 def main():
