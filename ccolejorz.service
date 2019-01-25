@@ -1,0 +1,13 @@
+[Unit]
+Description=ccolejorz stationmaster
+
+[Service]
+Type=simple
+ExecStart=/home/pi/.virtualenvs/colejorz/bin/python /home/pi/colejorz/stationmaster.py
+RemainAfterExit=no
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=ccolejorz
+
+[Install]
+WantedBy=multi-user.target
