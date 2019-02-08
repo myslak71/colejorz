@@ -3,7 +3,7 @@ Description=ccolejorz stationmaster
 
 [Service]
 Type=simple
-ExecStart=/home/pi/.virtualenvs/colejorz/bin/python /home/pi/colejorz/stationmaster.py
+ExecStart=/home/pi/.virtualenvs/colejorz/bin/colejorz
 RemainAfterExit=no
 StandardOutput=syslog
 StandardError=syslog
