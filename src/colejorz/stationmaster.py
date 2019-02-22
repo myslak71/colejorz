@@ -85,7 +85,7 @@ class Pilothouse:
             msg = 'Waiting at station!'
         else:
             msg = 'Going {direction} at {speed:02d}'.format(
-                **self.state
+                **self.train_state
             )
         print(msg, end="\r")
         sys.stdout.flush()
