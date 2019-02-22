@@ -103,7 +103,7 @@ class Pilothouse:
         GPIO.cleanup()
 
     @property
-    def state(self):
+    def train_state(self):
         return {
             'direction': self.state,
             'speed': self.pwm_value
@@ -156,7 +156,7 @@ class StationDutyRadio(BaseHTTPRequestHandler):
 
     def do_STATUS(self):
         "Provide current status"
-        self.wfile.write((dumps(self.server.pilothouse.state)+'\n').encode('utf-8'))
+        self.wfile.write((dumps(self.server.pilothouse.train_state)+'\n').encode('utf-8'))
 
 
 def main():
