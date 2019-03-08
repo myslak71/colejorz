@@ -14,7 +14,7 @@ def get_state(request):
     {'speed': <-100; 100>}, where the number is a percentage of a maximal speed.
     Negative numbers mean going backward, positive numbers mean going forward.
     """
-    return request.pilothouse.status
+    return request.stationmaster.status
 
 
 @view_config(name='state', renderer='json', request_method='POST')
@@ -32,11 +32,11 @@ def set_state(request):
     if errors:
         request.response.status_int = 400
         return errors
-    request.pilothouse.change_speed(int(body['speed']))
-    return request.pilothouse.status
+    request.stationmaster.change_state(int(body['speed']))
+    return {}
 
 
 @view_config(name='status', renderer='json', request_method='GET')
 def get_status(request):
     """Return train status."""
-    return {'status': request.pilothouse.report_status()}
+    return {'status': request.stationmaster.report_status()}
