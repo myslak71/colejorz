@@ -34,3 +34,9 @@ def set_state(request):
         return errors
     request.pilothouse.change_speed(int(body['speed']))
     return request.pilothouse.status
+
+
+@view_config(name='status', renderer='json', request_method='GET')
+def get_status(request):
+    """Return train status."""
+    return {'status': request.pilothouse.report_status()}

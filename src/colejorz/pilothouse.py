@@ -87,6 +87,7 @@ class Pilothouse:
             )
         print(msg, end="\r")
         sys.stdout.flush()
+        return msg
 
     def stop(self):
         self.adjust_speed(0)
