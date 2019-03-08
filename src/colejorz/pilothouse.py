@@ -11,7 +11,7 @@ except ModuleNotFoundError:
 FWD_PIN = 17
 BCK_PIN = 18
 PWM = 27
-
+STBY_PIN = 23
 
 MIN_SPEED = 50
 MAX_SPEED = 100
@@ -32,9 +32,11 @@ class Pilothouse:
     def _init_gpio(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
+        GPIO.setup(STBY_PIN, GPIO.OUT)
         GPIO.setup(FWD_PIN, GPIO.OUT)
         GPIO.setup(BCK_PIN, GPIO.OUT)
         GPIO.setup(PWM, GPIO.OUT)
+        GPIO.output(STBY_PIN, GPIO.HIGH)
         self.pwm = GPIO.PWM(PWM, 100)
         self.pwm.start(0)
         self.pwm_value = 0
