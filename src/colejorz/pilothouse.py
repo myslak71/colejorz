@@ -1,6 +1,7 @@
 import sys
 from json import dumps
 from time import sleep
+from threading import Event, Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 try:
     from RPi import GPIO
@@ -23,11 +24,17 @@ class Pilothouse:
     STOP = 'stop'
     BACKWARD = 'backward'
 
-    def __init__(self):
+    def __init__(self, queue):
         self.state = self.STOP
         self.pwm_value = 0
         self._init_gpio()
         self.report_status()
+
+        self._queue = queue
+        self.event = Event()
+        self._stop = False
+        self.thread = Thread(target=self.run_thread)
+        self.thread.start()
 
     def _init_gpio(self):
         GPIO.setmode(GPIO.BCM)
@@ -40,6 +47,15 @@ class Pilothouse:
         self.pwm = GPIO.PWM(PWM, 100)
         self.pwm.start(0)
         self.pwm_value = 0
+
+    def run_thread(self):
+        while not self._stop:
+            self.event.wait()
+            instruction = self._queue.get()
+            self.change_speed(instruction)
+            if self._queue.empty():
+                # there is another instruction - start doing it
+                self.event.clear()
 
     def change_speed(self, speed):
         """Change the state of the train."""
@@ -73,12 +89,16 @@ class Pilothouse:
         elif level > self.pwm_value:
             incr = 1
         while level != self.pwm_value:
+            if not self._queue.empty():
+                # new instruction - stop doing this one
+                break
             self.pwm_value += incr
             # never go faster than 100%
             self.pwm_value = min(self.pwm_value, MAX_SPEED)
             self.pwm.ChangeDutyCycle(self.pwm_value)
             self.report_status()
             sleep(0.2)
+        print()
 
     def report_status(self):
         if self.state == self.STOP:
@@ -97,11 +117,16 @@ class Pilothouse:
         GPIO.output(FWD_PIN, GPIO.LOW)
         self.state = self.STOP
         self.report_status()
+        print()
 
     def exit(self):
+        self._stop = True
+        self._queue.put(0)
+        self.event.set()
         self.stop()
         self.pwm.stop()
         GPIO.cleanup()
+        self.thread.join()
 
     @property
     def status(self):
