@@ -14,7 +14,7 @@ def get_state(request):
     {'speed': <-100; 100>}, where the number is a percentage of a maximal speed.
     Negative numbers mean going backward, positive numbers mean going forward.
     """
-    return request.stationmaster.status
+    return request.stationmaster.state
 
 
 @view_config(name='state', renderer='json', request_method='POST')
