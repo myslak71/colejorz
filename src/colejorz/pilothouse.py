@@ -66,7 +66,6 @@ class Pilothouse:
             if self.state == self.FORWARD:
                 # changing the direction
                 self.stop()
-                sleep(1)
             self.state = self.BACKWARD
             GPIO.output(BCK_PIN, GPIO.HIGH)
             self.adjust_speed(abs(speed))
@@ -75,7 +74,6 @@ class Pilothouse:
             if self.state == self.BACKWARD:
                 # changing the direction
                 self.stop()
-                sleep(1)
             self.state = self.FORWARD
             GPIO.output(FWD_PIN, GPIO.HIGH)
             self.adjust_speed(abs(speed))
@@ -113,8 +111,9 @@ class Pilothouse:
 
     def stop(self):
         self.adjust_speed(0)
-        GPIO.output(BCK_PIN, GPIO.LOW)
-        GPIO.output(FWD_PIN, GPIO.LOW)
+        if not self._queue.empty():
+            GPIO.output(BCK_PIN, GPIO.LOW)
+            GPIO.output(FWD_PIN, GPIO.LOW)
         self.state = self.STOP
         self.report_status()
         print()
@@ -123,7 +122,6 @@ class Pilothouse:
         self._stop = True
         self._queue.put(0)
         self.event.set()
-        self.stop()
         self.pwm.stop()
         GPIO.cleanup()
         self.thread.join()
