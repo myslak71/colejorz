@@ -39,10 +39,10 @@ class Pilothouse:
     def _init_gpio(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
+        GPIO.setup(STBY_PIN, GPIO.OUT)
         GPIO.setup(FWD_PIN, GPIO.OUT)
         GPIO.setup(BCK_PIN, GPIO.OUT)
         GPIO.setup(PWM, GPIO.OUT)
-        GPIO.setup(STBY_PIN, GPIO.OUT)
         GPIO.output(STBY_PIN, GPIO.HIGH)
         self.pwm = GPIO.PWM(PWM, 100)
         self.pwm.start(0)
