@@ -13,8 +13,8 @@ class StationMaster:
     def state(self):
         return self._pilothouse.status
 
-    def change_state(self, level):
-        self._queue.put(level)
+    def change_state(self, level, timed=0):
+        self._queue.put({'speed': level, 'timed': timed})
         self._pilothouse.event.set()
 
     def exit(self):

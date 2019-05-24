@@ -1,6 +1,6 @@
 import sys
 from json import dumps
-from time import sleep
+from time import sleep, time
 from threading import Event, Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 try:
@@ -52,7 +52,7 @@ class Pilothouse:
         while not self._stop:
             self.event.wait()
             instruction = self._queue.get()
-            self.change_speed(instruction)
+            self.change_speed(**instruction)
             if self._queue.empty():
                 # there is another instruction - start doing it
                 self.event.clear()
@@ -80,7 +80,13 @@ class Pilothouse:
             GPIO.output(FWD_PIN, GPIO.HIGH)
             self.adjust_speed(abs(speed))
 
-    def adjust_speed(self, level):
+    def adjust_speed(self, level, timed=0):
+        """
+        Adjust train speed.
+
+        :param int level: speed to aim to
+        :param int timed: number of seconds to stop after
+        """
         incr = 1
         if level == self.pwm_value:
             return
@@ -90,15 +96,24 @@ class Pilothouse:
             incr = 1
         while level != self.pwm_value:
             if not self._queue.empty():
-                # new instruction - stop doing this one
-                break
+                # new instruction - stop doing this one, and exit
+                return
             self.pwm_value += incr
             # never go faster than 100%
             self.pwm_value = min(self.pwm_value, MAX_SPEED)
             self.pwm.ChangeDutyCycle(self.pwm_value)
             self.report_status()
             sleep(0.2)
-        print()
+
+        if timed:
+            stop_at = time.time() + timed
+            while stop_at > time.time():
+                if not self._queue.empty():
+                    # new instruction - stop doing this one, and exit
+                    return
+                sleep(0.2)
+            self.stop()
+        return
 
     def report_status(self):
         if self.state == self.STOP:
@@ -117,7 +132,6 @@ class Pilothouse:
         GPIO.output(FWD_PIN, GPIO.LOW)
         self.state = self.STOP
         self.report_status()
-        print()
 
     def exit(self):
         self._stop = True
