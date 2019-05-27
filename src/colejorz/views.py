@@ -23,6 +23,7 @@ def set_state(request):
     POST to change the train state.
 
     Request must contain {'speed': <-100; 100>} to be valid.
+    Request might contain timed field for timed runs {'speed': <-100; 100>, 'timed': <0; Inf>}
     Where the number is a percentage of a maximal speed.
     Negative numbers mean going backward, positive numbers mean going forward.
     Returns JSON response with the train status.
@@ -31,8 +32,8 @@ def set_state(request):
     errors = validate_post_state_request(body)
     if errors:
         request.response.status_int = 400
-        return errors
-    request.stationmaster.change_state(int(body['speed']))
+        return {'errors': errors}
+    request.stationmaster.change_state(int(body['speed']), int(body.get('timed', 0)))
     return {}
 
 
