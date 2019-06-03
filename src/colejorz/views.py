@@ -34,7 +34,7 @@ def set_state(request):
         request.response.status_int = 400
         return {'errors': errors}
     request.stationmaster.change_state(int(body['speed']), int(body.get('timed', 0)))
-    return {}
+    return {'body': body, 'state': request.stationmaster.state}
 
 
 @view_config(name='status', renderer='json', request_method='GET')

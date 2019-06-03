@@ -57,7 +57,7 @@ class Pilothouse:
                 # there is another instruction - start doing it
                 self.event.clear()
 
-    def change_speed(self, speed):
+    def change_speed(self, speed, timed=0):
         """Change the state of the train."""
         if speed == 0:
             self.stop()
@@ -69,7 +69,7 @@ class Pilothouse:
                 sleep(1)
             self.state = self.BACKWARD
             GPIO.output(BCK_PIN, GPIO.HIGH)
-            self.adjust_speed(abs(speed))
+            self.adjust_speed(abs(speed), timed)
         else:
             # going forward
             if self.state == self.BACKWARD:
@@ -78,7 +78,7 @@ class Pilothouse:
                 sleep(1)
             self.state = self.FORWARD
             GPIO.output(FWD_PIN, GPIO.HIGH)
-            self.adjust_speed(abs(speed))
+            self.adjust_speed(abs(speed), timed)
 
     def adjust_speed(self, level, timed=0):
         """
