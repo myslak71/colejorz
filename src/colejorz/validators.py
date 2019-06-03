@@ -15,6 +15,6 @@ def validate_post_state_request(body):
         errors.append('Speed value must be in range <-100; 100>.')
 
     if 'timed' in body:
-        if body['timed'] < 0:
+        if int(body['timed']) < 0:
             errors.append('Timed run value cannot be negative value must be 0 for untimed run or any positive value.')
     return errors
