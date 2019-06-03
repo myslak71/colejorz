@@ -106,8 +106,8 @@ class Pilothouse:
             sleep(0.2)
 
         if timed:
-            stop_at = time.time() + timed
-            while stop_at > time.time():
+            stop_at = time() + timed
+            while stop_at > time():
                 if not self._queue.empty():
                     # new instruction - stop doing this one, and exit
                     return
@@ -148,5 +148,6 @@ class Pilothouse:
             self.STOP: 0, self.FORWARD: 1, self.BACKWARD: -1
         }[self.state]
         return {
-            'speed': self.pwm_value * direction
+            'speed': self.pwm_value * direction,
+            'pilothouse': 'working' if self.thread.is_alive() else 'closed'
         }
