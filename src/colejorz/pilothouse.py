@@ -35,6 +35,7 @@ class Pilothouse:
         self._stop = False
         self.thread = Thread(target=self.run_thread)
         self.thread.start()
+        self._current_instruction_timed = 0
 
     def _init_gpio(self):
         GPIO.setmode(GPIO.BCM)
@@ -87,13 +88,12 @@ class Pilothouse:
         :param int level: speed to aim to
         :param int timed: number of seconds to stop after
         """
+        self._current_instruction_timed = timed
         incr = 1
-        if level == self.pwm_value:
+        if level == self.pwm_value and not timed:
             return
         if level < self.pwm_value:
             incr = -1
-        elif level > self.pwm_value:
-            incr = 1
         while level != self.pwm_value:
             if not self._queue.empty():
                 # new instruction - stop doing this one, and exit
@@ -108,11 +108,12 @@ class Pilothouse:
         if timed:
             stop_at = time() + timed
             while stop_at > time():
+                self._current_instruction_timed = int(stop_at - time())
                 if not self._queue.empty():
                     # new instruction - stop doing this one, and exit
                     return
                 sleep(0.2)
-            self.stop()
+            self.change_speed(0)
         return
 
     def report_status(self):
@@ -149,5 +150,6 @@ class Pilothouse:
         }[self.state]
         return {
             'speed': self.pwm_value * direction,
-            'pilothouse': 'working' if self.thread.is_alive() else 'closed'
+            'pilothouse': 'working' if self.thread.is_alive() else 'closed',
+            'run': 'Planning to run for {}'.format(self._current_instruction_timed) if self._current_instruction_timed else 'Until next instruction received',
         }
