@@ -1,8 +1,8 @@
 """Clearcode Colejorz."""
+from wsgiref.simple_server import make_server
 
 from pyramid.request import Request
 from pyramid.config import Configurator
-from wsgiref.simple_server import make_server
 
 from colejorz.stationmaster import StationMaster
 from colejorz.views import get_state
@@ -18,7 +18,12 @@ def serve(**settings):
     config = Configurator(settings=settings)
     config.scan('colejorz')
     config.registry.stationmaster = StationMaster()
-    config.add_request_method(get_stationmaster, name='stationmaster', property=True, reify=True)
+    config.add_request_method(
+        get_stationmaster,
+        name='stationmaster',
+        property=True,
+        reify=True
+    )
     app = config.make_wsgi_app()
     server = make_server('0.0.0.0', 6543, app)
     try:

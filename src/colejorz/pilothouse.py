@@ -1,8 +1,13 @@
+"""Pilothouse's module."""
+import platform
 import sys
-from json import dumps
 from time import sleep, time
 from threading import Event, Thread
-from http.server import HTTPServer, BaseHTTPRequestHandler
+
+from pkg_resources import parse_version
+
+if parse_version('3.6') > parse_version(platform.python_version()):
+    ModuleNotFoundError = ImportError  # pylint:disable=redefined-builtin
 try:
     from RPi import GPIO
 except ModuleNotFoundError:
@@ -18,13 +23,21 @@ MIN_SPEED = 50
 MAX_SPEED = 100
 SPEED_STEP = 10
 
-class Pilothouse:
+
+class Pilothouse:  # pylint:disable=too-many-instance-attributes
+    """
+    Pilothouse class holding all the logic for analog trains.
+
+    Properly sets forward and backward pins and also properly sets pwm pin
+    to manage the speed.
+    """
 
     FORWARD = 'forward'
     STOP = 'stop'
     BACKWARD = 'backward'
 
     def __init__(self, queue):
+        """Initialize pilothouse."""
         self.state = self.STOP
         self.pwm_value = 0
         self._init_gpio()
@@ -50,6 +63,7 @@ class Pilothouse:
         self.pwm_value = 0
 
     def run_thread(self):
+        """Continuously monitor and apply speed change requests."""
         while not self._stop:
             self.event.wait()
             instruction = self._queue.get()
@@ -117,6 +131,7 @@ class Pilothouse:
         return
 
     def report_status(self):
+        """Report current speed status to stdout."""
         if self.state == self.STOP:
             msg = 'Waiting at station!'
         else:
@@ -128,6 +143,7 @@ class Pilothouse:
         return msg
 
     def stop(self):
+        """Stop the train."""
         self.adjust_speed(0)
         GPIO.output(BCK_PIN, GPIO.LOW)
         GPIO.output(FWD_PIN, GPIO.LOW)
@@ -135,6 +151,7 @@ class Pilothouse:
         self.report_status()
 
     def exit(self):
+        """Close pilothouse."""
         self._stop = True
         self._queue.put(0)
         self.event.set()
@@ -145,11 +162,17 @@ class Pilothouse:
 
     @property
     def status(self):
+        """Return proper status data."""
         direction = {
             self.STOP: 0, self.FORWARD: 1, self.BACKWARD: -1
         }[self.state]
+        run = 'Until next instruction received'
+        if self._current_instruction_timed:
+            run = 'Planning to run for {}'.format(
+                self._current_instruction_timed
+            )
         return {
             'speed': self.pwm_value * direction,
             'pilothouse': 'working' if self.thread.is_alive() else 'closed',
-            'run': 'Planning to run for {}'.format(self._current_instruction_timed) if self._current_instruction_timed else 'Until next instruction received',
+            'run':  run,
         }

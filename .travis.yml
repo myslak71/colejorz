@@ -1,0 +1,27 @@
+dist: xenial
+language: python
+python:
+- 3.5
+- 3.6
+# blocklist branches
+branches:
+  except:
+  - /^dependabot.*$/
+  - /^issue-.*$/
+install:
+- pip install -e .[tests] coveralls wheel
+script:
+- py.test --cov src/colejorz
+after_success:
+- coveralls
+jobs:
+  include:
+    - stage: linters
+      python: 3.6
+      install:
+      - pip install .[tests,linters]
+      script:
+      - pycodestyle
+      - pydocstyle
+      - pylint colejorz tests
+      after_success: skip

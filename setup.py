@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Colejorz's installation file."""
 
 from setuptools import setup, find_packages
 
@@ -8,6 +9,15 @@ requirements = [
 ]
 
 requirements_tests = [
+    'pytest',
+    'pytest-cov',
+    'pytest_pyramid',
+]
+
+requirements_linters = [
+    'pycodestyle',
+    'pydocstyle',
+    'pylint'
 ]
 
 setup(
@@ -19,7 +29,8 @@ setup(
     include_package_data=True,
     install_requires=requirements,
     extras_require={
-        'tests': requirements_tests
+        'tests': requirements_tests,
+        'linters': requirements_linters
     },
     entry_points={
         'console_scripts': [
