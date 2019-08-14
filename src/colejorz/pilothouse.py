@@ -101,17 +101,18 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
 
         :param int level: speed to aim to
         :param int timed: number of seconds to stop after
+        :return: whether adjust has finished adjusting or not
         """
         self._current_instruction_timed = timed
         incr = 1
         if level == self.pwm_value and not timed:
-            return
+            return True
         if level < self.pwm_value:
             incr = -1
         while level != self.pwm_value:
             if not self._queue.empty():
                 # new instruction - stop doing this one, and exit
-                return
+                return False
             self.pwm_value += incr
             # never go faster than 100%
             self.pwm_value = min(self.pwm_value, MAX_SPEED)
@@ -125,10 +126,10 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
                 self._current_instruction_timed = int(stop_at - time())
                 if not self._queue.empty():
                     # new instruction - stop doing this one, and exit
-                    return
+                    return True
                 sleep(0.2)
-            self.change_speed(0)
-        return
+            return self.change_speed(0)
+        return True
 
     def report_status(self):
         """Report current speed status to stdout."""
@@ -144,10 +145,10 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
 
     def stop(self):
         """Stop the train."""
-        self.adjust_speed(0)
-        GPIO.output(BCK_PIN, GPIO.LOW)
-        GPIO.output(FWD_PIN, GPIO.LOW)
-        self.state = self.STOP
+        if self.adjust_speed(0):
+            GPIO.output(BCK_PIN, GPIO.LOW)
+            GPIO.output(FWD_PIN, GPIO.LOW)
+            self.state = self.STOP
         self.report_status()
 
     def exit(self):
