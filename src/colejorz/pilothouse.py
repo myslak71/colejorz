@@ -80,7 +80,8 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
             # going backward
             if self.state == self.FORWARD:
                 # changing the direction
-                self.stop()
+                if not self.stop():
+                    return
                 sleep(1)
             self.state = self.BACKWARD
             GPIO.output(BCK_PIN, GPIO.HIGH)
@@ -89,7 +90,8 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
             # going forward
             if self.state == self.BACKWARD:
                 # changing the direction
-                self.stop()
+                if not self.stop():
+                    return
                 sleep(1)
             self.state = self.FORWARD
             GPIO.output(FWD_PIN, GPIO.HIGH)
@@ -144,12 +146,22 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
         return msg
 
     def stop(self):
-        """Stop the train."""
-        if self.adjust_speed(0):
-            GPIO.output(BCK_PIN, GPIO.LOW)
-            GPIO.output(FWD_PIN, GPIO.LOW)
-            self.state = self.STOP
-        self.report_status()
+        """
+        Stop the train.
+
+        :rtype: bool
+        :returns: Whether the stop has been successful or not.
+        """
+        try:
+            if self.adjust_speed(0):
+                GPIO.output(BCK_PIN, GPIO.LOW)
+                GPIO.output(FWD_PIN, GPIO.LOW)
+                self.state = self.STOP
+            else:
+                return False
+            return True
+        finally:
+            self.report_status()
 
     def exit(self):
         """Close pilothouse."""
