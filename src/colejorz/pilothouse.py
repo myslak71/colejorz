@@ -1,10 +1,10 @@
 """Pilothouse's module."""
 import platform
 import sys
-from queue import Queue
+from queue import Queue  # pylint: disable=unused-import
 from time import sleep, time
 from threading import Event, Thread
-from typing import Optional, Union, Dict
+from typing import Dict, Union
 
 from pkg_resources import parse_version
 
@@ -39,7 +39,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
     STOP = 'stop'
     BACKWARD = 'backward'
 
-    def __init__(self, queue: Queue) -> None:
+    def __init__(self, queue: "Queue[Union[int, Dict[str, int]]]") -> None:
         """Initialize pilothouse."""
         self.state = self.STOP
         self.pwm_value = 0
@@ -70,7 +70,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
         while not self._stop:
             self.event.wait()
             instruction = self._queue.get()
-            self.change_speed(**instruction)
+            self.change_speed(**instruction)  # type: ignore
             if self._queue.empty():
                 # there is another instruction - start doing it
                 self.event.clear()
@@ -100,7 +100,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
             GPIO.output(FWD_PIN, GPIO.HIGH)
             self.adjust_speed(abs(speed), timed)
 
-    def adjust_speed(self, level: int, timed: int = 0) -> Optional[bool]:
+    def adjust_speed(self, level: int, timed: int = 0) -> bool:
         """
         Adjust train speed.
 
@@ -133,7 +133,8 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
                     # new instruction - stop doing this one, and exit
                     return True
                 sleep(0.2)
-            return self.change_speed(0)  # type: ignore
+            self.change_speed(0)
+            return False
         return True
 
     def report_status(self) -> str:
