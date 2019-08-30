@@ -24,4 +24,5 @@ jobs:
       - pycodestyle
       - pydocstyle
       - pylint colejorz tests
+      - mypy src
       after_success: skip

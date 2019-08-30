@@ -1,11 +1,14 @@
 """Colejorz REST API views."""
+from typing import Dict, Union
+
+from pyramid.request import Request
 from pyramid.view import view_config
 
 from colejorz.validators import validate_post_state_request
 
 
 @view_config(name='state', renderer='json', request_method='GET')
-def get_state(request):
+def get_state(request: Request) -> Dict['str', Union[int, str]]:
     """
     GET info about a state of a train.
 
@@ -18,7 +21,7 @@ def get_state(request):
 
 
 @view_config(name='state', renderer='json', request_method='POST')
-def set_state(request):
+def set_state(request: Request) -> Dict['str', Dict[str, Union[int, str]]]:
     """
     POST to change the train state.
 
@@ -42,6 +45,6 @@ def set_state(request):
 
 
 @view_config(name='status', renderer='json', request_method='GET')
-def get_status(request):
+def get_status(request: Request) -> Dict[str, str]:
     """Return train status."""
     return {'status': request.stationmaster.report_status()}

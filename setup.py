@@ -15,6 +15,7 @@ requirements_tests = [
 ]
 
 requirements_linters = [
+    'mypy',
     'pycodestyle',
     'pydocstyle',
     'pylint'
