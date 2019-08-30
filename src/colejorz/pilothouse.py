@@ -170,7 +170,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
     def exit(self) -> None:
         """Close pilothouse."""
         self._stop = True
-        self._queue.put(0)
+        self._queue.put({'speed': 0, 'timed': 0})
         self.event.set()
         self.stop()
         self.pwm.stop()
