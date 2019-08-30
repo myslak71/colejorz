@@ -1,19 +1,21 @@
 """Clearcode Colejorz."""
+from typing import Dict, Any
 from wsgiref.simple_server import make_server
 
 from pyramid.request import Request
 from pyramid.config import Configurator
 
+from colejorz.pilothouse import Pilothouse
 from colejorz.stationmaster import StationMaster
 from colejorz.views import get_state
 
 
-def get_stationmaster(request):
+def get_stationmaster(request: Request) -> Pilothouse:
     """Return the pilothouse instance."""
     return request.registry.stationmaster
 
 
-def serve(**settings):
+def serve(**settings: Dict[str, Any]) -> None:
     """Configure and serve the Pyramid WSGI application for colejorz."""
     config = Configurator(settings=settings)
     config.scan('colejorz')
