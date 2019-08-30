@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """Colejorz's installation file."""
-
 from setuptools import setup, find_packages
-
 
 requirements = [
     'pyramid==1.10.2',
@@ -33,8 +31,11 @@ setup(
         'linters': requirements_linters
     },
     entry_points={
-        'console_scripts': [
-            'colejorz = colejorz:serve',
+        'paste.app_factory': [
+            'main = colejorz:app_factory',
+        ],
+        'paste.server_factory': [
+            'main = colejorz:server_factory',
         ],
     }
 )
