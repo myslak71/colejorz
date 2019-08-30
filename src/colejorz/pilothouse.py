@@ -39,7 +39,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
     STOP = 'stop'
     BACKWARD = 'backward'
 
-    def __init__(self, queue: "Queue[Union[int, Dict[str, int]]]") -> None:
+    def __init__(self, queue: "Queue[Dict[str, int]]") -> None:
         """Initialize pilothouse."""
         self.state = self.STOP
         self.pwm_value = 0
@@ -70,7 +70,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
         while not self._stop:
             self.event.wait()
             instruction = self._queue.get()
-            self.change_speed(**instruction)  # type: ignore
+            self.change_speed(**instruction)
             if self._queue.empty():
                 # there is another instruction - start doing it
                 self.event.clear()
@@ -178,7 +178,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
         self.thread.join()
 
     @property
-    def status(self) -> Dict['str', Union[int, str]]:
+    def status(self) -> Dict[str, Union[int, str]]:
         """Return proper status data."""
         direction = {
             self.STOP: 0, self.FORWARD: 1, self.BACKWARD: -1

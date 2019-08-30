@@ -14,7 +14,7 @@ class StationMaster:
 
     def __init__(self):
         """Initialize stationmaster, queue and Pilothouse."""
-        self._queue = Queue()  # type: Queue
+        self._queue = Queue()  # type: Queue[Dict[str, int]]
         self._pilothouse = Pilothouse(self._queue)
 
     @property

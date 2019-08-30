@@ -8,7 +8,7 @@ from colejorz.validators import validate_post_state_request
 
 
 @view_config(name='state', renderer='json', request_method='GET')
-def get_state(request: Request) -> Dict['str', Union[int, str]]:
+def get_state(request: Request) -> Dict[str, Union[int, str]]:
     """
     GET info about a state of a train.
 

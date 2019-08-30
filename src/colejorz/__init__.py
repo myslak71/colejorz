@@ -5,12 +5,11 @@ from wsgiref.simple_server import make_server
 from pyramid.request import Request
 from pyramid.config import Configurator
 
-from colejorz.pilothouse import Pilothouse
 from colejorz.stationmaster import StationMaster
 from colejorz.views import get_state
 
 
-def get_stationmaster(request: Request) -> Pilothouse:
+def get_stationmaster(request: Request) -> StationMaster:
     """Return the pilothouse instance."""
     return request.registry.stationmaster
 
