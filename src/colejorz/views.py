@@ -44,4 +44,4 @@ def set_state(request):
 @view_config(name='status', renderer='json', request_method='GET')
 def get_status(request):
     """Return train status."""
-    return {'status': request.stationmaster.report_status()}
+    return {'status': request.stationmaster.train_status}

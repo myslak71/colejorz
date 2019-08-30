@@ -21,6 +21,11 @@ class StationMaster:
         """Return state."""
         return self._pilothouse.status
 
+    @property
+    def train_status(self) -> str:
+        """Return train status."""
+        return self._pilothouse.report_status()
+
     def change_state(self, level, timed=0):
         """Request state change (speed and direction)."""
         self._queue.put({'speed': level, 'timed': timed})
