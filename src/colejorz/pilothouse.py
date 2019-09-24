@@ -39,6 +39,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
     STOP = 'stop'
     BACKWARD = 'backward'
 
+    # Parenthesis prevents typing statement evaluation during runtime
     def __init__(self, queue: "Queue[Dict[str, int]]") -> None:
         """Initialize pilothouse."""
         self.state = self.STOP
