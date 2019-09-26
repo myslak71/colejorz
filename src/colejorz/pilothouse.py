@@ -1,8 +1,10 @@
 """Pilothouse's module."""
 import platform
 import sys
+from queue import Queue  # pylint: disable=unused-import
 from time import sleep, time
 from threading import Event, Thread
+from typing import Dict, Union
 
 from pkg_resources import parse_version
 
@@ -12,6 +14,7 @@ try:
     from RPi import GPIO
 except ModuleNotFoundError:
     from unittest.mock import MagicMock
+
     GPIO = MagicMock()
 
 FWD_PIN = 17
@@ -36,7 +39,8 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
     STOP = 'stop'
     BACKWARD = 'backward'
 
-    def __init__(self, queue):
+    # Parenthesis prevents typing statement evaluation during runtime
+    def __init__(self, queue: "Queue[Dict[str, int]]") -> None:
         """Initialize pilothouse."""
         self.state = self.STOP
         self.pwm_value = 0
@@ -50,7 +54,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
         self.thread.start()
         self._current_instruction_timed = 0
 
-    def _init_gpio(self):
+    def _init_gpio(self) -> None:
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
         GPIO.setup(STBY_PIN, GPIO.OUT)
@@ -62,7 +66,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
         self.pwm.start(0)
         self.pwm_value = 0
 
-    def run_thread(self):
+    def run_thread(self) -> None:
         """Continuously monitor and apply speed change requests."""
         while not self._stop:
             self.event.wait()
@@ -72,7 +76,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
                 # there is another instruction - start doing it
                 self.event.clear()
 
-    def change_speed(self, speed, timed=0):
+    def change_speed(self, speed: int, timed: int = 0) -> None:
         """Change the state of the train."""
         if speed == 0:
             self.stop()
@@ -97,7 +101,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
             GPIO.output(FWD_PIN, GPIO.HIGH)
             self.adjust_speed(abs(speed), timed)
 
-    def adjust_speed(self, level, timed=0):
+    def adjust_speed(self, level: int, timed: int = 0) -> bool:
         """
         Adjust train speed.
 
@@ -130,10 +134,11 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
                     # new instruction - stop doing this one, and exit
                     return True
                 sleep(0.2)
-            return self.change_speed(0)
+            self.change_speed(0)
+            return False
         return True
 
-    def report_status(self):
+    def report_status(self) -> str:
         """Report current speed status to stdout."""
         if self.state == self.STOP:
             msg = 'Waiting at station!'
@@ -145,7 +150,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
         sys.stdout.flush()
         return msg
 
-    def stop(self):
+    def stop(self) -> bool:
         """
         Stop the train.
 
@@ -163,10 +168,10 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
         finally:
             self.report_status()
 
-    def exit(self):
+    def exit(self) -> None:
         """Close pilothouse."""
         self._stop = True
-        self._queue.put(0)
+        self._queue.put({'speed': 0, 'timed': 0})
         self.event.set()
         self.stop()
         self.pwm.stop()
@@ -174,7 +179,7 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
         self.thread.join()
 
     @property
-    def status(self):
+    def status(self) -> Dict[str, Union[int, str]]:
         """Return proper status data."""
         direction = {
             self.STOP: 0, self.FORWARD: 1, self.BACKWARD: -1
@@ -187,5 +192,5 @@ class Pilothouse:  # pylint:disable=too-many-instance-attributes
         return {
             'speed': self.pwm_value * direction,
             'pilothouse': 'working' if self.thread.is_alive() else 'closed',
-            'run':  run,
+            'run': run,
         }
