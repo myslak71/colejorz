@@ -35,7 +35,7 @@ def app_factory(
 
 
 def server_factory(
-        global_conf: OrderedDict,  # pylint:disable=unused-argument
+        global_config: OrderedDict,  # pylint:disable=unused-argument
         host: str,
         port: str
 ) -> Callable[[Router], None]:
