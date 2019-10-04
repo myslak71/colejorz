@@ -1,4 +1,5 @@
 """Colejorz stationmaster."""
+from typing import Dict, Union
 from queue import Queue
 
 from colejorz.pilothouse import Pilothouse
@@ -13,15 +14,15 @@ class StationMaster:
 
     def __init__(self):
         """Initialize stationmaster, queue and Pilothouse."""
-        self._queue = Queue()
+        self._queue: Queue[Dict[str, int]] = Queue()  # pylint:disable=E1136
         self._pilothouse = Pilothouse(self._queue)
 
     @property
-    def state(self):
+    def state(self) -> Dict[str, Union[int, str]]:
         """Return state."""
         return self._pilothouse.status
 
-    def change_state(self, level, timed=0):
+    def change_state(self, level: int, timed: int = 0):
         """Request state change (speed and direction)."""
         self._queue.put({'speed': level, 'timed': timed})
         self._pilothouse.event.set()

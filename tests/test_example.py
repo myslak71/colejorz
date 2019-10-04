@@ -2,7 +2,7 @@
 
 
 def test_placeholder(stationmaster):
-    """Expected state for not doing anything Statiomaster."""
+    """Expected state for not doing anything Stationmaster."""
     assert stationmaster.state == {
         'pilothouse': 'working',
         'run': 'Until next instruction received',

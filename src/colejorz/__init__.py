@@ -10,15 +10,19 @@ from colejorz.stationmaster import StationMaster
 from colejorz.views import get_state
 
 
-def get_stationmaster(request):
+def get_stationmaster(request: Request) -> StationMaster:
     """Return the pilothouse instance."""
     return request.registry.stationmaster
+
 
 
 def app_factory(
         global_config: OrderedDict,  # pylint:disable=unused-argument
         **settings: Any
 ):
+
+def serve(**settings: Dict[str, Any]) -> None:
+
     """Configure and serve the Pyramid WSGI application for colejorz."""
     with Configurator(settings=settings) as config:
         config.scan('colejorz')
