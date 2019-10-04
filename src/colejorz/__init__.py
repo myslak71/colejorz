@@ -30,8 +30,8 @@ def app_factory(
             property=True,
             reify=True
         )
-        app = config.make_wsgi_app()
-        return app
+
+        return config.make_wsgi_app()
 
 
 def server_factory(
