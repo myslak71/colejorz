@@ -1,6 +1,6 @@
 """Clearcode Colejorz."""
 from collections import OrderedDict
-from typing import Callable, Dict, Any
+from typing import Callable, Any
 from wsgiref.simple_server import make_server
 
 from pyramid.config import Configurator
