@@ -3,7 +3,7 @@ Description=ccolejorz stationmaster
 
 [Service]
 Type=simple
-ExecStart=/home/pi/.virtualenvs/colejorz/bin/colejorz
+ExecStart=/home/pi/.virtualenvs/pserve /home/pi/.virtualenvs/colejorz/development.ini
 RemainAfterExit=no
 StandardOutput=syslog
 StandardError=syslog
