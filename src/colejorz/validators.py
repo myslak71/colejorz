@@ -1,8 +1,8 @@
 """Colejorz validators."""
-from typing import Dict
+from typing import Dict, List
 
 
-def validate_post_state_request(body: Dict[str, int]):
+def validate_post_state_request(body: Dict[str, int]) -> List[str]:
     """Validate if state change has correct values."""
     errors = []
     try:
