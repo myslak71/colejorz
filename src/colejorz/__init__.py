@@ -1,9 +1,11 @@
 """Clearcode Colejorz."""
-from typing import Dict, Any
+from collections import OrderedDict
+from typing import Callable, Any
 from wsgiref.simple_server import make_server
 
-from pyramid.request import Request
 from pyramid.config import Configurator
+from pyramid.request import Request
+from pyramid.router import Router
 
 from colejorz.stationmaster import StationMaster
 from colejorz.views import get_state
@@ -14,25 +16,40 @@ def get_stationmaster(request: Request) -> StationMaster:
     return request.registry.stationmaster
 
 
-def serve(**settings: Dict[str, Any]) -> None:
+def app_factory(
+        global_config: OrderedDict,  # pylint:disable=unused-argument
+        **settings: Any
+):
     """Configure and serve the Pyramid WSGI application for colejorz."""
-    config = Configurator(settings=settings)
-    config.scan('colejorz')
-    config.registry.stationmaster = StationMaster()
-    config.add_request_method(
-        get_stationmaster,
-        name='stationmaster',
-        property=True,
-        reify=True
-    )
-    app = config.make_wsgi_app()
-    server = make_server('0.0.0.0', 6543, app)
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        config.registry.stationmaster.exit()
-        server.server_close()
+    with Configurator(settings=settings) as config:
+        config.scan('colejorz')
+        config.registry.stationmaster = StationMaster()
+        config.add_request_method(
+            get_stationmaster,
+            name='stationmaster',
+            property=True,
+            reify=True
+        )
+
+        return config.make_wsgi_app()
 
 
-if __name__ == '__main__':
-    serve()
+def server_factory(
+        global_config: OrderedDict,  # pylint:disable=unused-argument
+        host: str,
+        port: str
+) -> Callable[[Router], None]:
+    """Return WSGI serving function reference."""
+    app_port = int(port)
+
+    def serve(app: Router) -> None:
+        """Serve the application."""
+        server = make_server(host, app_port, app)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            # close the pilothouse
+            app.registry.stationmaster.exit()
+            server.server_close()
+
+    return serve
